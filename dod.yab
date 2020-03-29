@@ -1,0 +1,94 @@
+#!/bin/yab
+
+dim level(81)
+dim monstername$(34)
+dim monsterhp(34)
+dim monsterhm(34)
+
+newgame = true
+onload = true
+gameloop = true
+
+difficulty = 1
+maxlevels = 30
+columns = 9
+
+sub delay(seconds)
+	pause(seconds)
+end sub
+
+sub cls()
+	clear screen
+end sub
+
+sub rnd()
+	r = ran()
+	return r
+end sub
+
+sub getDifficulty()
+	d	= 0
+	while (d<1 or d>2)
+		print "Difficulty Level: 1 = Moderate, 2 = Hard"
+		input "Enter Difficulty level > " n
+		d = int(n)
+	wend
+	return d
+end sub
+
+sub getIndex(x,y)
+	i	=	x+(columns*y)
+	return i
+end sub
+
+sub getName()
+	input "Enter your character's name > " n
+	pname = str(n)
+	return pname
+end sub
+
+sub fillArray(col,row)
+	for y = 1 to col
+		for x = 1 to row
+			i = getIndex(x,y)
+			level(i) = int(rnd()*7)+1
+		next x
+	next y
+	
+	h = int(rnd()*3)+1
+	for n = 1 to h
+		x = int(rnd()*col)+1
+		y = int(rnd()*row)+1
+		i = getIndex(x,y)
+		level(i) = 8
+	next n
+	
+	s = int(rnd()*4+1)+2
+	for n = 1 to s
+		x = int(rnd()*col)+1
+		y = int(rnd()*row)+1
+		i = getIndex(x,y)
+		level(i) = 9
+	next n
+end sub
+
+sub monsterSetup()
+	mlevel = 0
+	for i = 0 to 33
+		read monstername$(i)
+	next i
+	for i = 0 to 33
+		read monsterhp(i)
+	next i
+	for i = 0 to 33
+		read monsterhm(i)
+	next i
+	
+	data "Large Dragon","Hideous Ghoul","Lizard Man","Manticore","Purple Worm","Deadly Cobra","Mad Elf","Clay Man","Hairy Beast","Mad Dwarf","Zombie","Berserker","Giant Scorpion","Giant Cockroach","Doppleganger","Giant Fire Beetle","Giant Ant","Giant Tick","Mummy","Nasty Orc","Skeleton","Troll","Goblin","Vampire Bat","Creeping Blob","Mad Dog","Large Spider","Black Cat","Man Eating Plant","Hydra","Gelatinous Cube","Giant Centipede","Giant Rat","Shadow"
+	
+	data 6,5,4,6,6,5,5,4,5,4,4,5,6,4,5,1,1,2,3,2,1,3,3,3,3,2,3,2,1,3,2,1,2,2
+	
+	data 12,10,8,12,12,10,10,8,10,8,8,10,12,8,10,2,2,4,6,4,2,6,6,6,6,4,6,4,2,6,4,2,4,4
+	
+end sub
+
