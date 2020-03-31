@@ -1,6 +1,6 @@
 #!/bin/yab
 
-dim level(81)
+dim level(31,81)
 dim monstername$(34)
 dim monsterhp(34)
 dim monsterhm(34)
@@ -47,11 +47,14 @@ sub getName()
 	return pname
 end sub
 
-sub fillArray(col,row)
+sub fillArray()
+	local col
+	local row
+	
 	for y = 1 to col
 		for x = 1 to row
 			i = getIndex(x,y)
-			level(i) = int(rnd()*7)+1
+			level(currentlevel,i) = int(rnd()*7)+1
 		next x
 	next y
 	
@@ -60,7 +63,7 @@ sub fillArray(col,row)
 		x = int(rnd()*col)+1
 		y = int(rnd()*row)+1
 		i = getIndex(x,y)
-		level(i) = 8
+		level(currentlevel,i) = 8
 	next n
 	
 	s = int(rnd()*4+1)+2
@@ -68,7 +71,7 @@ sub fillArray(col,row)
 		x = int(rnd()*col)+1
 		y = int(rnd()*row)+1
 		i = getIndex(x,y)
-		level(i) = 9
+		level(currentlevel,i) = 9
 	next n
 end sub
 
@@ -92,3 +95,360 @@ sub monsterSetup()
 	
 end sub
 
+sub getRating$(r)
+	local rating$
+	local rate$
+	
+	rating$ = playername$ + " - " + str$(r) + " - " + playerkilledby$ + " - "
+	if r <= -400 then
+		rating$ = rating$ + "Incompetent Serf"
+	elsif r <= -100 then
+		rating$ = rating$ + "Weakling"
+	elsif r < 0 then
+		rating$ = rating$ + "Apprentice"
+	elsif r < 100 then
+		rating$ = rating$ + "Halfling"
+	elsif r < 200 then
+		rating$ = rating$ + "Foot Soldier"
+	elsif r < 600 then
+		rating$ = rating$ + "Warrior"
+	elsif r < 900 then
+		rating$ = rating$ + "Great Warrior"
+	elsif r < 1500 then
+		rating$ = rating$ + "Swordsman"
+	elsif r < 2500 then
+		rating$ = rating$ + "Magic Swordsman"
+	elsif r >= 2500 then
+		rating$ = rating$ + "Dungeon Master"
+	endif
+	return rating$
+end sub
+
+sub showMap()
+	clear screen
+	if playerhasmap = false then
+		print "You pat your pockets looking for your map"
+		print "before you remember you don't have one."
+		delay(1)
+	else
+		print "The Dungeon of Danger Map: Level " + str$(currentlevel)
+		print " "
+		for q = 1 to 9
+			for n = 1 to 9
+				if playerx = n and playery = q then
+					print "PL ";
+				else
+					rm = level(currentlevel,getIndex(n,q))
+					switch rm
+						case 1: print "O  ";:break
+						case 2: print "C  ";:break
+						case 3: print "M  ";:break
+						case 4: print "M  ";:break
+						case 5: print "?  ";:break
+						case 6: print "NS ";:break
+						case 7: print "EW ";:break
+						case 8: print "?  ";:break
+						case 9: print "UP ";:break
+					end switch
+				endif
+			next n
+			print " "
+		next q
+	endif
+		
+	print "Press a Key"
+	a$ = inkey$
+end sub
+
+sub newGame$()
+	local looper
+	local pin$
+	
+	looper = true
+	while (looper = true)
+		print "Game Over"
+		print "Would you like to play again?"
+		print "Enter (Y)es or (N)o"
+		pin$ = inkey$
+		if upper$(pin$) = "Y" or upper$(pin$) = "N" then
+			looper = true
+		endif
+	wend
+	return(upper$(pin$))
+end sub
+
+sub atWall(dir$)
+	print "You are at the " + dir$ + "wall"
+	print "You cannot pass through."
+end sub
+
+sub decHP(x)
+	playerhp = playerhp - x
+	if playerhp <= 0 then
+		playerdead = true
+	endif
+//	return(playerhp)
+end sub
+
+sub incHP(x)
+	playerhp = playerhp + x
+end sub
+
+sub turnEnd()
+	turnstaken = turnstaken + 1
+	turnsleft = turnsleft - 1
+	if turnsleft = 0 then
+		movesdepleted = true
+	endif
+	if playerhp < startinghp then
+		healthturn = healthturn + 1
+		if healthrun > 5 then
+			playerhp = playerhp + int(rnd()*5)+1
+			if playerhp > startinghp then
+				playerhp = startinghp
+				print "You feel like your old self again."
+			else
+				healthturn = 0
+				print "You're feeling slightly better."
+			endif
+		endif
+	else
+		healthturn = 0
+	endif
+end sub
+
+sub move(c,d)
+	playeroldx = playerx
+	playeroldy = playery
+	playerx = c
+	playery = d
+end sub
+
+sub hasMoved()
+	local rval
+	
+	if playerx = playeroldx and playery = playeroldy then
+		rval = false
+	else
+		rval = true
+	endif
+	return rval
+end sub
+
+sub upLevel()
+	haskey = false
+	print "Your Enchanted Key melts in the lock!"
+	if hasmap = true then
+		hasmap = false
+		print "Your map turns to dust!"
+	endif
+	if playerhp < startinghp then
+		playerhp = startinghp
+		print "You feel stronger. . . . . "
+		delay(1)
+		print "Your hit-points are restored to " + str$(startinghp)
+		print " "
+	endif
+	monsterskilled = 0
+	print "You are now on level " + str$(currentlevel)
+	delay(2)
+end sub
+
+sub reset(d)
+	playerx 		= int(rnd()*8+1)
+	playery 		= int(rnd()*8+1)
+	startinghp 		= 20+(int(rnd()*15)+1)/d
+	movesdepleted 	= false
+	hasmap			= false
+	haskey			= false
+	movesleft		= 100
+	gold			= 500
+	monsterkilled	= 0
+	totalkills		= 0
+	playerhp		= startinghp
+end sub
+
+sub checkKey()
+	if monsterskilled > targetkills then
+		haskey = true
+		print "You look to the ground. . . . . . "
+		print "and find the Enchanted Key!"
+		delay(2)
+	endif
+end sub
+
+// This will probably need to be changed
+sub findExits()
+	dim a(2)
+	
+	location = getIndex(playerx,playery)
+	thisroom = level(currentlevel,location)
+	foundexit= false
+	
+	direction = int(rnd()*4)+1
+	
+	if direction = 1 and (playery-1 <> 0 and thisroom <> 7) then
+		a(1) = playery -1
+	elsif direction = 3 and (playery+1 <> 9 and thisroom <> 7) then
+		a(1) = playery + 1
+	elsif direction = 2 and (playerx+1 <> 9 and thisroom <> 6) then
+		a(0) = playerx + 1
+	elsif direction = 4 and (playery-1 <> 0 and thisroom <> 6) then
+		a(0) = playerx -1
+	endif
+	return a()
+end sub
+//
+
+sub gameWon()
+	local gg
+	local ratenum
+	local rating$
+	
+	print "You found your way . . . "
+	print ". . . out of the Dungeon of Dangeresque!"
+	print 
+	print "You have acquired " + str$(gold) + " gold pieces."
+	gg = gold + 100
+	ratenum = int((gg*monsterskilled-7000+1)/turnstaken)
+	killedby$ = "Left the Dungeon!"
+	rating$ = getRating$(ratenum)
+	print "Game rating is: "
+	print rating$
+	print "You took " + str$(turnstaken) + " turns to find the way out."
+	print "Along the way, you killed " + str$(totalkills) + " monsters."
+	exit
+end sub
+
+sub playerDead()
+	local gg
+	local r
+	local f$
+	
+	delay(2)
+	clear screen
+	if movesdepleted = true then
+		print playername$ + ", you have run out of moves."
+	else
+		print "Your hit-points have been depleted."
+	endif
+	print "Unfortunately, you just died."
+	delay(2)
+	w = int(rnd()*6+1)
+	if movesdepleted = false and w>=3 then
+		delay(1)
+		playerhp = startinghp
+		flourish()
+		print
+		print "You have entered . . . a zone"
+		print "between . . . .life and death"
+		print
+		delay(1)
+		print "I, the Ancient Wizard"
+		print "will restore you hit-points to " + str$(startinghp)
+		print "and. . . you have one more"
+		print "chance in the Dungeon."
+		print
+		turnsleft = int(rnd()*15+1)*monsterskilled+10
+		print "You shall have " + str$(turnsleft) + " moves"
+		print "to find your way out"
+		print "of the Dungeon of Danger."
+		delay(2)
+		flourish()
+	else
+		print "You lost all your gold and were"
+		print ". . . unable to meet the demands of"
+		print ". . . . . THe Dungeon of Danger"
+		print
+		print
+		print "Better luck next time."
+		gg = gold+100
+		r = int((gg*monsterskilled-7000+1)/turnstaken)
+		rating$ = getRating$(r)
+		print "Your rating is:"
+		print rating$
+		f$ = newGame$()
+		if f$="Y" then
+			newgame = true
+			playerdead = false
+			gold = 0
+		else
+			exit
+		endif
+	endif
+end sub
+
+sub teleportTrap()
+	static teleportx
+	static teleporty
+	dim runto(2)
+	
+	if teleportactive = false then
+		teleportactive = true
+		print "You activated some sort of trap. . . "
+		delay(1)
+		teleportx = playerx
+		teleporty = playery
+		playerx = int(rnd()*8+1)
+		playery = int(rnd()*8+1)
+		print "Suddenly, you feel dizzy and ass out."
+		delay(2)
+		flourish()
+		print "When you wake up . . . you find"
+		print "that you were . . . . teleported"
+		print "to an unknown location. . . . . "
+		delay(2)
+		idx = getIndex(playerx,playery)
+		runto = findExits()
+		playeroldx = runto(0)
+		playeroldy = runto(1)
+	else
+		teleportactive = false
+		print "You reactivated a teleportation trap"
+		delay(1)
+		flourish()
+		delay(1)
+		print "You end up back in the area where"
+		print ". . . you last teleported from"
+		playerx = teleportx
+		playery = teleporty
+	endif
+end sub
+
+sub deadMonster()
+	local tempgold
+	local givegold
+	
+	delay(2)
+	print
+	print "You have killed the " + monstername$
+	print
+	if (inroom < 6 and inroom <> 2) then
+		idx = getIndex(playerx,playery)
+	endif
+	level(currentlevel,idx) = 1
+	tempgold = 500
+	
+	if inroom >= 6 then
+		tempgold = 250
+	endif
+	givegold = int(rnd()*gold/currentlevel+1)+75
+	
+	if inroom = 2 then
+		givegold=givegold*2
+	endif
+	gold = gold + givegold
+	delay(2)
+	print "You search the area . . . . "
+	delay(2)
+	print "And find " + str$(givegold) + "gold pieces"
+	monsterskilled = monsterkilled + 1
+	totalkills = totalkills + 1
+	if haskey = false
+		checkKey()
+	endif
+end sub
+
+sub monsterAttacks()
+	print
+	
