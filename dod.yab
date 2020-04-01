@@ -18,7 +18,11 @@ sub delay(seconds)
 end sub
 
 sub cls()
-	clear screen
+	local x
+//	cls()
+	for x = 1 to 25
+		print " "
+	next x
 end sub
 
 sub rnd()
@@ -41,20 +45,20 @@ sub getIndex(x,y)
 	return i
 end sub
 
-sub getName()
+sub getName$()
 	input "Enter your character's name > " n
-	pname = str(n)
-	return pname
+	pname$ = str$(n)
+	return pname$
 end sub
 
-sub fillArray()
+sub fillArray(lvl)
 	local col
 	local row
 	
 	for y = 1 to col
 		for x = 1 to row
 			i = getIndex(x,y)
-			level(currentlevel,i) = int(rnd()*7)+1
+			level(lvl,i) = int(rnd()*7)+1
 		next x
 	next y
 	
@@ -63,7 +67,7 @@ sub fillArray()
 		x = int(rnd()*col)+1
 		y = int(rnd()*row)+1
 		i = getIndex(x,y)
-		level(currentlevel,i) = 8
+		level(lvl,i) = 8
 	next n
 	
 	s = int(rnd()*4+1)+2
@@ -71,7 +75,7 @@ sub fillArray()
 		x = int(rnd()*col)+1
 		y = int(rnd()*row)+1
 		i = getIndex(x,y)
-		level(currentlevel,i) = 9
+		level(lvl,i) = 9
 	next n
 end sub
 
@@ -125,7 +129,7 @@ sub getRating$(r)
 end sub
 
 sub showMap()
-	clear screen
+	cls()
 	if playerhasmap = false then
 		print "You pat your pockets looking for your map"
 		print "before you remember you don't have one."
@@ -326,7 +330,7 @@ sub playerDead()
 	local f$
 	
 	delay(2)
-	clear screen
+	cls()
 	if movesdepleted = true then
 		print playername$ + ", you have run out of moves."
 	else
@@ -444,11 +448,706 @@ sub deadMonster()
 	print "And find " + str$(givegold) + "gold pieces"
 	monsterskilled = monsterkilled + 1
 	totalkills = totalkills + 1
-	if haskey = false
+	if haskey = false then
 		checkKey()
 	endif
 end sub
 
 sub monsterAttacks()
+	local w
+	local n
+
+	print
+	w = int(rnd()*7+1)
+	print ". . . . . . . It attacks you"
+	if w <= 2 then
+		print "But . . . . . . it misses"
+		delay(2)
+	else
+		w = int(rnd()*6+1)
+		if w >= 3 then
+			n = int(rnd()*playerhp*difficulty+1)
+		else
+			n = int(rnd()*playerhp/currentlevel+1)+int(rnd()*playerhp/currentlevel+1)
+		endif
+		if monsterhm <= 2 then
+			n = 1
+		endif
+		decHP(n)
+		if playerdead = true then
+			return
+		endif
+		print "And it does " + str$(n) + " hit-points of damage"
+		print
+		print "You have . . . " + str$(playerhp) + " hit-points left"
+		print
+	endif
+end sub
+
+sub attackMonster()
+	local n
+	
+	cls()
+	print "You attack the " + monstername$
+	delay(1)
+	print "With a swing of your sword"
+	n = int(rnd()*5+1)+int(rnd()*monsterskilled/2+1)
+	monsterhm = monsterhm - n
+	if monsterhm <= 0 then
+		deadMonster()
+		return monsterhm
+	endif
+	print "You do "+ str$(n)+" hit-points of damage"
+	delay(1)
+	print "It has . . "+str$(monsterhm)+" hit-points left"
+	delay(1)
+	return monsterhm
+end sub
+
+sub flee()
+	local w
+	local n
+	
+	w = int(rnd()*4+1)
+	playerx = playeroldx
+	playery = playeroldy
+	print "You quickly run out . . . "
+	if teleportactive = true then
+		teleportTrap()
+	endif
+	n = int(rnd()*2+1)
+	delay(2)
+	if w >= 3 then
+		decHP(n)
+		print "As you leave . . . "
+		print "The "+monstername$+" attacks"
+		delay(1)
+		if playerdead = true then
+			return
+		endif
+		print "And it does "+str$(n)+" hit-points of damage"
+		delay(2)
+	endif
+end sub
+
+sub fightOrFlee$()
+	local f$
+	print
+	print "Will you (F)ight or (R)un? ";
+	f$ = inkey$
+	if upper$(f$) = "F" then
+		print "Fight!"
+	else
+		print "Run!"
+	endif
+	return upper$(f$)
+end sub
+
+sub doBattle()
+	local battleloop
+	local w
+	local f$
+	local check
+	
+	battleloop = true
+	delay(2)
+	print
+	w = int(rnd()*4+1)
+	if w > 2 then
+		delay(1)
+		monsterAttacks()
+		if playerdead = true then
+			battleloop = false
+			return
+		endif
+	endif
+	while (battleloop = true)
+		f$ = fightOrFlee$()
+		if f$ = "F" then
+			check = attackMonster()
+			if check <= 0 then
+				battleloop = false
+				continue 
+			else
+				monsterAttacks()
+				if playerdead = true then
+					battleloop = false
+					return
+				endif
+			endif
+		else
+			flee()
+			battleloop = false
+		endif
+	wend
+end sub
+
+sub emptyChamber()
+	local w
+	
+	w = int(rnd()*2+1)
+	if w = 2 then
+		print "You are in a damp and misty"
+	else
+		print "You are in a cold and dark"
+	endif
+	print ". . . . . empty chamber."
+	print
+end sub
+
+sub intoPit()
+	
+	print "You fell into a deep . . . pit"
+	delay(1)
+	print "Luckily. . . you didn't get hurt"
+	print
+	delay(1)
+	print "But in climbing out . . . "
+	print "You . . . . . . . .lost"
+	print "all of your gold pieces"
+	print
+	gold = 0
+	if haskey = true then
+		print "But. . . you still have your Enchanted Key"
+	endif
+end sub
+
+sub trapDoor()
+	local trap
+	
+	print "You activated a . . . trap door"
+	delay(2)
+	trap = int(rnd()*4+1)*difficulty
+	if trap > 4 then
+		print "You fell through . . . "
+		delay(2)
+		print "And landed badly."
+		killedby$ = "Trap Door"
+		playerdead = true
+		return
+	elsif trap = 4 then
+		if currentlevel > 1 then
+			intoPit()
+			return
+		endif
+		currentlevel = currentlevel + 1
+		if currentlevel > maxlevel then
+			currentlevel = maxlevel
+		endif
+		print
+		print "You fell thru to level "+str$(currentlevel)+" . . . and"
+		delay(1)
+		print "you . . . . . . . .lost"
+		print "all of your gold pieces"
+		gold = 0
+		if haskey = true then
+			print "But you still have your Enchanted Key"
+		endif
+		return
+	else
+		print "But . . . you caught yourself"
+		print "from falling"
+	endif
+end sub
+
+sub goUpstairs()
+	cls()
+	if inroom <> 9 then
+		print "You attempt to walk up a stair that doesn't exist."
+		print "You fall flat on your face."
+	else
+		if haskey = true then
+			currentlevel = currentlevel + 1
+			print "You walk up the stairway and come to a heavy door with an ornate lock."
+			delay(1)
+			print "Your Enchanted Key. . . opens the lock!"
+			delay(1)
+			if currentlevel = 0 then
+				gameWon()
+			else
+				upLevel()
+			endif
+		else
+			print "You walk all the way up the stairs and find a heavy door with an ornate lock."
+			print "You jiggle the handle, but the door is, indeed, locked."
+			print "With a sigh,  you remember that you don't have an Enchanted Key,"
+			print "so you walk all the way down the stairs again."
+			delay(1)
+		endif
+	endif
+end sub
+
+sub corridor()
+	local w
+	
+	if (playerx = playeroldx) and (playery = playeroldy) then
+		return
+	endif
+	
+	if (inroom = 6) and ((playerx -1 = playeroldx) or (playerx+1=playeroldx)) then
+		print "The door closes and locks behind you"
+	elsif (inroom = 7) and ((playery-1 = playeroldy) or (playery+1 = playeroldy)) then
+		print "The door closes and locks behind you"
+	endif
+	
+	delay(1)
+	w = int(rnd()*8+1)
+	if w >= 7 then
+		w = int(rnd()*4+1)+30
+		monstername$ = monstername$(w)
+		monsterhp = monsterhp(w)
+		monsterhm = monsterhm(w)
+		print "There is something lurking"
+		print "in this corridor . . . . ."
+		delay(1)
+		print ". . . . Beware"
+		delay(1)
+		print "It is a . . . . . "+monstername$+" . . "
+		delay(1)
+		doBattle()
+		return
+	elseif w = 8 then
+		if haskey = false then
+			haskey = true
+			print "You notice a shiny object . . . . "
+			print ". . . . at your feet"
+			delay(1)
+			print "You pick it up and find that . . . "
+			print "It is the Enchanted Key . . . . . "
+			delay(1)
+			print "But you weren't careful. . . . "
+			delay(1)
+		endif
+		print "You activated some sort of trap . . . "
+		delay(1)
+		teleportTrap()
+	endif
+end sub
+
+sub nsCorridor()
+	cls()
+	print "You are in a North-South corridor"
+	print "You can only go North or South"
+	if didMove() = true then
+		corridor()
+	endif
+end sub
+
+sub ewCorridor()
+	cls()
+	print "You are in an East-West corridor"
+	print "You can only go East or West"
+	if didMove() = true then
+		corridor()
+	endif
+end sub
+
+sub findVial()
+	local h
+	local v
+	local d$
+	local dl
+	
+	print "You look around. . . "
+	delay(2)
+	v = int(rnd()*7+1)
+	if v < 5 then
+		print ". . . But you don't see anything of interest."
+		return
+	endif
+	print "On the ground, at your feet, is a vial."
+	delay(2)
+	print "You pick up the vial . . and see that"
+	print "It contains . . . a milky liquid."
+	print "Would you like a drink?"
+	d$ = inkey$
+	if upper$(d$) = "N" then
+		print "Nope"
+		return
+	endif
+	print "Yep"
+	print "You take a drink. . . "
+	dl = int(rnd()*6+1)
+	delay(2)
+	if dl >= 3 then
+		h = int(rnd()*10/difficulty+1)+(6/difficulty)
+		incHP(h)
+		print "It was a white magic potion. . . "
+		print "Which increased your hit-points by "+str$(h)
+	elsif dl = 2 then
+		print "The liquid had no effect on you"
+	else
+		h = int(rnd()*6+1)*difficulty
+		decHP(h)
+		print "You feel a little funny. . ."
+		delay(2)
+		if playerdead = true then
+			return
+		endif
+		print "It was a black magic potion . . . "
+		print "Which decreased your hit-points by "+str$(h)
+	endif
+end sub
+
+sub somethingJumps()
+	cls()
+	print "Suddenly. . . something jumps. . . "
+	print "in front of you . . . . . "
+	delay(2)
+end sub
+
+sub thief()
+	local idx,gg,surprise
+	
+	cls()
+	print "Their is a thief in this chamber"
+	idx = getIndex(playerx,playery)
+	level(currentlevel,idx) = 1
+	delay(1)
+	gg = int(rnd()*500/currentlevel+1)
+
+	if gold - gg < 0 then
+		gg = gold
+	endif
+	
+	surprise = int(rnd()*8+1)
+	
+	if surprise <= 3 then
+		print
+		print "You surprise the thief. . . . "
+		delay(1)
+		print "As he runs out, he drops . . . . "
+		gg = int(rnd()*400/currentlevel+1)
+		print ". . . "+str$(gg)+" gold pieces"
+		gold = gold + gg
+		print "You pick up the gold for yourself"
+		print
+	else
+		print ". . . . . . . He surprises you"
+		delay(2)
+		print "As he quickly passes by you, he"
+		print "snatches . . . "+str$(gg)+" gold pieces"
+		gold = gold -gg
+	endif
+
+	if hasmap = true then
+		return
+	else
+		ma = int(rnd()*4+1)
+		if ma <= 2 then
+			hasmap = true
+			getMap()
+		endif
+	endif
+end sub
+
+sub fallInPool()
+	local w, gg
+	
+	cls()
+	print "You fall into a deep . . . dark"
+	delay(1)
+	print ". . . pool. . . of murky water"
+	delay(2)
+	
+	w = int(rnd()*6+1)
 	print
 	
+	if w >= 5 then
+		monstername$	= "Gill Monster"
+		monsterhp		= 8
+		monsterhm		= 14
+		print "The water is. . . icy cold"
+		delay(2)
+		print "Suddenly. . you feel something warm"
+		print ". . . rub against your legs. . . . "
+		delay(2)
+		print
+		print "It then surfaces next to  you. . . "
+		print " and you see that it is a slimy . ."
+		print ". . . "+monstername$+" . . ready to attack"
+		delay(2)
+		print
+		print "As you climb out. . . "
+		delay(2)
+		doBattle()
+	elsif w >= 3 then
+		print "The water is steaming. . . . hot"
+		delay(2)
+		print
+		print "As you quickly jump out . . . . "
+		gg = int(rnd()*500+1)+100
+		if gold-gg < 0 then
+			gg = gold
+		endif
+		gold = gold -gg
+		print "You drop "+str$(gg)+" gold pieces"
+		print "Which fall into the pool . . . lost"
+		delay(2)
+	else
+		print "It is warm and soothing. . And"
+		delay(2)
+		print "You climb out. . . feeling relaxed"
+		print
+	endif
+end sub
+
+sub giantSpider()
+	monstername$ = "Giant Spider"
+	monsterhp	 = 6
+	monsterhm	 = 12
+	print "It's a huge man-sized crawling"
+	print ". . . . . . SPIDER . . . . . ."
+	delay(2)
+	print ". . . . . . . and . . . . . . "
+	doBattle()
+end sub
+
+sub mrWizard()
+	local hp,gg
+	
+	print "Halt. . . I am the Ancient Wizard"
+	print "I will not harm you . . . . . "
+	delay(2)
+	print
+	gg = int(rnd()*300+1)+100
+	print
+	print "I give you . . . "+str$(gg)+" gold pieces"
+	print "Out of the good will and friendship"
+	print
+	hp = int(rnd()*10/difficulty+1)+(6/difficulty)
+	incHP(hp)
+	print "Also, I will increase. . . "
+	print "Your hit-points by "=str$(hp)+"."
+	delay(2)
+end sub
+
+sub darkWizard()
+	monstername$	= "Dark Wizard"
+	monsterhp		= 8
+	monsterhm		= 14
+	
+	cls()
+	print "Do not pass. . . I am the "+monstername$
+	delay(2)
+	print "And I will hack you to pieces. . . "
+	delay(2)
+	doBattle()
+end sub
+
+sub occupiedCavern()
+	local w
+	
+	if inroom = 4 then
+		w = int(rnd()*15+1)+15
+	else
+		w = int(rnd()*15+1)
+	endif
+	print
+	print "There is something lurking. . . "
+	print ". . . . in this chamber . . . . "
+	delay(1)
+	print ". . . . . . . . . . . . .Beware "
+	delay(1)
+	print
+	monstername$ = monstername$(w)
+	monsterhp	 = monsterhp(w)
+	monsterhm	 = monsterhm(w)
+	print "It is a . . . . . "+monstername$+". . "
+	delay(2)
+	doBattle()
+end sub
+
+sub hiddenCavern()
+	local w
+	
+	print "You stumbled onto . . . . . "
+	print "A Hidden Cavern"
+	delay(2)
+	print
+	findVial()
+	if playerdead = true then
+		playerDead()
+	endif
+	w = int(rnd()*9+1)
+	delay(2)
+	
+	if w > 3 then
+		print "The cavern seems empty. . . "
+		return
+	endif
+	
+	print "But wait. . . Before you proceed"
+	delay(2)
+	print
+	print "You hear a noise off in the distance"
+	delay(2)
+	print "Cautiously, you walk towards the sound."
+	delay(2)
+	
+	w = int(rnd()*4+1)
+	if (w = 1) and (playerhp<startinghp) then
+		somethingJumps()
+		mrWizard()
+	elsif (w = 2) then
+		somethingJumps()
+		giantSpider()
+	elsif (w = 4) and (currentlevel > 1) then
+		fallInPool()
+	else
+		somethingJumps()
+		darkWizard()
+	endif
+end sub
+
+sub stairs()
+	print "You are at a stairway"
+	print ". . . . . going up"
+end sub
+
+sub introTop()
+	cls()
+	print"The Dungeon of Dangeresque"
+	print"   For Python 3"
+	print"(c) 1980 by Howard Berenbon"
+	print"Adapted from Atari BASIC verson"
+	print"Of 'Dunger of Danger'"
+	print" "
+	print"A Fantasy Game"
+	print"=-=-=-=-=-=-=-=-=-=-"
+	print"You will be teleported to..."
+	print" "
+end sub
+
+sub introMiddle()
+	print "The. . . "
+	print "Dungeon of Dangeresque!"
+end sub
+
+sub introBottom()
+	print "You carry a magic sword and {player.gold} gold pieces with you."
+	print "Your hit-point value is {player.hp}."
+	print "If it reaches zero, you will die . . . So be careful!"
+	delay(1)
+	print name$+" . . . You are on your way."
+	delay(3)
+#	cls()
+	print "You have arrived at . . . "
+	print "The Dungeon of Danger . . . Level "+str$(currentlevel)
+	print " "
+	print "You will encounter monsters and thieves and . . . gold."
+	print "Good luck!"
+	delay(3)
+end sub
+
+sub showCommands$()
+	local m$
+	
+	print "(N)orth, (E)ast, (S)outh, (W)est"
+	print "(U)p, (M)ap"
+	print "(Command)> ";
+	m$ = inkey$
+	switch (m$)
+		case "N":print "North":break
+		case "E":print "East":break
+		case "S":print "South":break
+		case "W":print "West":break
+		case "U":print "Up":break
+		case "M":print "Map":break
+		case "Q":print "Quit":End
+	end switch
+	return upper$(m$)
+end sub
+
+while (gameloop = true)
+	if onload = true then
+		introTop()
+		monsterSetup()
+		onload = false
+	endif
+	
+	if newgame = true then
+		introMiddle()
+		difficulty 	= getDifficulty()
+		maxlevel	= difficulty*10
+		currentlevel= maxlevel
+		
+		for i = 1 to maxlevel
+			fillArray(i)
+		next i
+		
+		playername$=getName$()
+		reset(difficulty)
+		teleportactive	= false
+		introBottom()
+		idx = getIndex(playerx,playery)
+		level(currentlevel,idx) = 1
+		inroom = level(currentlevel,idx)
+		targetKills = int(rnd()*4+1)+4
+		newgame = false
+	endif
+	
+	cls()
+	
+	switch (inroom)
+		case 1: emptyChamber():break
+		case 2: hiddenCavern():break
+		case 3: occupiedCavern():break
+		case 4: occupiedCavern():break
+		case 5: thief():break
+		case 6: nsCorridor():break
+		case 7: ewCorridor():break
+		case 8: trapDoor():break
+		case 9: stairs():break
+	end switch
+	
+	if playerdead = true then
+		playerDead()
+	endif
+	
+	pmove$=showCommands$()
+	
+	if pmove$="N" then
+		if playery-1 = 0 then
+			atWall("North")
+		elsif inroom = 7 then
+			ewCorridor()
+		else
+			move(playerx,playery-1)
+		endif
+	elsif pmove$="E" then
+		if playerx+1 = 9 then
+			atWall("East")
+		elsif inroom = 6 then
+			nsCorridor()
+		else
+			move(playerx+1,playery)
+		endif
+	elsif pmove$="S" then
+		if playery+1 = 9 then
+			atWall("South")
+		elsif inroom = 7 then
+			ewCorridor()
+		else
+			move(playerx-1,playery)
+		endif
+	elsif pmove$="W" then
+		if playerx-1 = 0 then
+			atWall("West")
+		elseif inroom = 6 then
+			nsCorridor()
+		else
+			move(playerx-1,playery)
+		endif
+	elsif pmove$="U" then
+		goUpstairs()
+	elsif pmove$="M" then
+		showMap()
+	elsif pmove$="Q" then
+		end
+	endif
+	
+	inroom = level(currentlevel,getIndex(playerx,playery))
+	turnEnd()
+	delay(2)
+wend
