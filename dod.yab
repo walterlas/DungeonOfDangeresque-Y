@@ -1,9 +1,9 @@
-#!/bin/yab
+#!yab
 
 dim level(31,81)
-dim monstername$(34)
-dim monsterhp(34)
-dim monsterhm(34)
+dim monstername$(35)
+dim monsterhp(35)
+dim monsterhm(35)
 
 newgame = true
 onload = true
@@ -46,8 +46,8 @@ sub getIndex(x,y)
 end sub
 
 sub getName$()
-	input "Enter your character's name > " n
-	pname$ = str$(n)
+	input "Enter your character's name > " pname$
+#	pname$ = str$(n)
 	return pname$
 end sub
 
@@ -119,13 +119,13 @@ end sub
 
 sub monsterSetup()
 	mlevel = 0
-	for i = 0 to 33
+	for i = 1 to 34
 		read monstername$(i)
 	next i
-	for i = 0 to 33
+	for i = 1 to 34
 		read monsterhp(i)
 	next i
-	for i = 0 to 33
+	for i = 1 to 34
 		read monsterhm(i)
 	next i
 	
@@ -141,7 +141,7 @@ sub getRating$(r)
 	local rating$
 	local rate$
 	
-	rating$ = playername$ + " - " + str$(r) + " - " + playerkilledby$ + " - "
+	rating$ = name$ + " - " + str$(r) + " - " + killedby$ + " - "
 	if r <= -400 then
 		rating$ = rating$ + "Incompetent Serf"
 	elsif r <= -100 then
@@ -168,7 +168,7 @@ end sub
 
 sub showMap()
 	local debug
-	debug = true
+	debug = false
 	
 	cls()
 	if playerhasmap = false and debug <> true then
@@ -388,7 +388,8 @@ sub playerDead()
 	print "Unfortunately, you just died."
 	delay(2)
 	w = int(rnd()*6+1)
-	if movesdepleted = false and w>=3 then
+	lives = lives - 1
+	if movesdepleted = false and w>=3 and lives > 0 then
 		delay(1)
 		playerhp = startinghp
 		flourish()
@@ -496,6 +497,7 @@ sub deadMonster()
 	print "You search the area . . . . "
 	delay(2)
 	print "And find " + str$(givegold) + " gold pieces"
+	print
 	monsterskilled = monsterskilled + 1
 	totalkills = totalkills + 1
 	if haskey = false then
@@ -723,7 +725,8 @@ sub goUpstairs()
 end sub
 
 sub corridor()
-	local w
+	local w,debug
+	debug = false
 	
 	if (playerx = playeroldx) and (playery = playeroldy) then
 		return
@@ -739,6 +742,9 @@ sub corridor()
 	w = int(rnd()*8+1)
 	if w >= 7 then
 		w = int(rnd()*4+1)+30
+		if debug = true then
+			print "Hall monster ID: " + str$(w) + ":"+monstername$(w)
+		endif
 		monstername$ = monstername$(w)
 		monsterhp = monsterhp(w)
 		monsterhm = monsterhm(w)
@@ -1047,7 +1053,7 @@ end sub
 sub introTop()
 	cls()
 	print"The Dungeon of Dangeresque"
-	print"   For Python 3"
+	print"   For Yab (or Yabasic)"
 	print"(c) 1980 by Howard Berenbon"
 	print"Adapted from Atari BASIC verson"
 	print"Of 'Dunger of Danger'"
@@ -1059,8 +1065,17 @@ sub introTop()
 end sub
 
 sub introMiddle()
-	print "The. . . "
-	print "Dungeon of Dangeresque!"
+//	print "The. . . "
+//	print "Dungeon of Dangeresque!"
+	local intro
+	
+//	intro = open("./intro.txt","r")
+	open "intro.txt" for reading as #1
+	while (not eof(1))
+		 line input #1 iline$
+		 print iline$
+	wend
+	close #1
 end sub
 
 sub introBottom()
@@ -1068,22 +1083,30 @@ sub introBottom()
 	print "Your hit-point value is "+str$(playerhp)+"."
 	print "If it reaches zero, you will die . . . So be careful!"
 	delay(1)
-	print name$+" . . . You are on your way."
+	print name$+" . . . You are on your way to the . . ."
 	delay(3)
+	open "dod-logo.txt" for reading as #1
+	while (not eof(1))
+		line input #1 iline$
+		print iline$
+	wend
+	close #1
 #	cls()
+	print
 	print "You have arrived at . . . "
 	print "The Dungeon of Danger . . . Level "+str$(currentlevel)
 	print " "
 	print "You will encounter monsters and thieves and . . . gold."
 	print "Good luck!"
-	delay(3)
+	delay(4)
 end sub
 
 sub showCommands$()
 	local m$,debug
-	debug = true
+	debug = false
 	
 	if debug = true then
+		print "User: " + name$
 		print "Location = "+str$(playerx)+","+str$(playery)
 		print "Total Kills: "+str$(totalkills)+" This Level: "+str$(monsterskilled)+" Target: "+str$(targetKills)
 	endif
@@ -1096,7 +1119,7 @@ sub showCommands$()
 end sub
 
 while (gameloop = true)
-	debug = true
+	debug = false
 	
 	if onload = true then
 		introTop()
@@ -1111,7 +1134,7 @@ while (gameloop = true)
 		currentlevel= maxlevel
 		
 		fillArray(maxlevel)
-		playername$=getName$()
+		name$=getName$()
 		reset(difficulty)
 		teleportactive	= false
 		introBottom()
@@ -1121,6 +1144,7 @@ while (gameloop = true)
 		targetKills = int(rnd()*4+1)+4
 		newgame = false
 		killedby$ = " "
+		lives = 1
 		
 	endif
 	
