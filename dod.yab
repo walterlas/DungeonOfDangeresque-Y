@@ -51,32 +51,70 @@ sub getName$()
 	return pname$
 end sub
 
-sub fillArray(lvl)
-	local col
-	local row
+sub flourish()
+	local aa
 	
-	for y = 1 to col
-		for x = 1 to row
+	for aa = 1 to 301
+		print "*        %";
+	next aa
+	delay(2)
+	print
+end sub
+
+sub didMove()
+	local moved
+	if playerx = playeroldx and playery=playeroldy then
+		moved = false
+	else
+		moved = true
+	endif
+	return moved
+end sub
+
+sub fillArray(endtime)
+	local col,row,debug,dothis,lvl
+	debug = false
+	col = 8
+	row = 8
+	
+	if debug = true then 
+		Print "Starting room placement"
+	endif 
+	
+	for dothis = 1 to endtime
+		for i = 0 to 81
+			level(dothis,i) = int(rnd()*7)+1
+		next i
+	
+		h = int(rnd()*3)+1
+		for n = 1 to h
+			x = int(rnd()*col)+1
+			y = int(rnd()*row)+1
 			i = getIndex(x,y)
-			level(lvl,i) = int(rnd()*7)+1
-		next x
-	next y
+			level(dothis,i) = 8
+		next n
 	
-	h = int(rnd()*3)+1
-	for n = 1 to h
-		x = int(rnd()*col)+1
-		y = int(rnd()*row)+1
-		i = getIndex(x,y)
-		level(lvl,i) = 8
-	next n
+		s = int(rnd()*4+1)+2
+		for n = 1 to s
+			x = int(rnd()*col)+1
+			y = int(rnd()*row)+1
+			i = getIndex(x,y)
+			level(dothis,i) = 9
+		next n
 	
-	s = int(rnd()*4+1)+2
-	for n = 1 to s
-		x = int(rnd()*col)+1
-		y = int(rnd()*row)+1
-		i = getIndex(x,y)
-		level(lvl,i) = 9
-	next n
+		if debug = true then
+			print "Showing level "+str$(dothis)
+			idx = 1
+			for x = 1 to 8
+				for y = 1 to 8
+					print level(dothis,idx);
+					idx = idx + 1
+				next y
+				print
+			next x
+			print "-----------------------------------------"
+		endif
+	next dothis
 end sub
 
 sub monsterSetup()
@@ -129,16 +167,19 @@ sub getRating$(r)
 end sub
 
 sub showMap()
+	local debug
+	debug = true
+	
 	cls()
-	if playerhasmap = false then
+	if playerhasmap = false and debug <> true then
 		print "You pat your pockets looking for your map"
 		print "before you remember you don't have one."
 		delay(1)
 	else
 		print "The Dungeon of Danger Map: Level " + str$(currentlevel)
 		print " "
-		for q = 1 to 9
-			for n = 1 to 9
+		for q = 1 to 8
+			for n = 1 to 8
 				if playerx = n and playery = q then
 					print "PL ";
 				else
@@ -160,8 +201,8 @@ sub showMap()
 		next q
 	endif
 		
-	print "Press a Key"
-	a$ = inkey$
+	input "Press Enter" dummy$
+//	a$ = inkey$
 end sub
 
 sub newGame$()
@@ -172,17 +213,17 @@ sub newGame$()
 	while (looper = true)
 		print "Game Over"
 		print "Would you like to play again?"
-		print "Enter (Y)es or (N)o"
-		pin$ = inkey$
+		input "Enter (Y)es or (N)o> " pin$
+//		pin$ = inkey$
 		if upper$(pin$) = "Y" or upper$(pin$) = "N" then
-			looper = true
+			looper = false
 		endif
 	wend
 	return(upper$(pin$))
 end sub
 
 sub atWall(dir$)
-	print "You are at the " + dir$ + "wall"
+	print "You are at the " + dir$ + " wall"
 	print "You cannot pass through."
 end sub
 
@@ -254,6 +295,7 @@ sub upLevel()
 		print " "
 	endif
 	monsterskilled = 0
+	targetKills = int(rnd()*4+1)+4
 	print "You are now on level " + str$(currentlevel)
 	delay(2)
 end sub
@@ -272,8 +314,15 @@ sub reset(d)
 	playerhp		= startinghp
 end sub
 
+sub getMap()
+	print "You search the chamber and"
+	delay(1)
+	print "You. . . . . find a map"
+	hasmap = true
+end sub
+
 sub checkKey()
-	if monsterskilled > targetkills then
+	if monsterskilled > targetKills then
 		haskey = true
 		print "You look to the ground. . . . . . "
 		print "and find the Enchanted Key!"
@@ -357,8 +406,9 @@ sub playerDead()
 		print "You shall have " + str$(turnsleft) + " moves"
 		print "to find your way out"
 		print "of the Dungeon of Danger."
-		delay(2)
+		delay(3)
 		flourish()
+		playerdead = false
 	else
 		print "You lost all your gold and were"
 		print ". . . unable to meet the demands of"
@@ -445,8 +495,8 @@ sub deadMonster()
 	delay(2)
 	print "You search the area . . . . "
 	delay(2)
-	print "And find " + str$(givegold) + "gold pieces"
-	monsterskilled = monsterkilled + 1
+	print "And find " + str$(givegold) + " gold pieces"
+	monsterskilled = monsterskilled + 1
 	totalkills = totalkills + 1
 	if haskey = false then
 		checkKey()
@@ -533,13 +583,7 @@ end sub
 sub fightOrFlee$()
 	local f$
 	print
-	print "Will you (F)ight or (R)un? ";
-	f$ = inkey$
-	if upper$(f$) = "F" then
-		print "Fight!"
-	else
-		print "Run!"
-	endif
+	input "Will you (F)ight or (R)un? " f$
 	return upper$(f$)
 end sub
 
@@ -550,6 +594,7 @@ sub doBattle()
 	local check
 	
 	battleloop = true
+	killedby$ = monstername$
 	delay(2)
 	print
 	w = int(rnd()*4+1)
@@ -657,7 +702,7 @@ sub goUpstairs()
 		print "You fall flat on your face."
 	else
 		if haskey = true then
-			currentlevel = currentlevel + 1
+			currentlevel = currentlevel - 1
 			print "You walk up the stairway and come to a heavy door with an ornate lock."
 			delay(1)
 			print "Your Enchanted Key. . . opens the lock!"
@@ -759,13 +804,7 @@ sub findVial()
 	delay(2)
 	print "You pick up the vial . . and see that"
 	print "It contains . . . a milky liquid."
-	print "Would you like a drink?"
-	d$ = inkey$
-	if upper$(d$) = "N" then
-		print "Nope"
-		return
-	endif
-	print "Yep"
+	input "Would you like a drink? " d$
 	print "You take a drink. . . "
 	dl = int(rnd()*6+1)
 	delay(2)
@@ -800,7 +839,7 @@ sub thief()
 	local idx,gg,surprise
 	
 	cls()
-	print "Their is a thief in this chamber"
+	print "There is a thief in this chamber"
 	idx = getIndex(playerx,playery)
 	level(currentlevel,idx) = 1
 	delay(1)
@@ -918,7 +957,7 @@ sub mrWizard()
 	hp = int(rnd()*10/difficulty+1)+(6/difficulty)
 	incHP(hp)
 	print "Also, I will increase. . . "
-	print "Your hit-points by "=str$(hp)+"."
+	print "Your hit-points by "+str$(hp)+"."
 	delay(2)
 end sub
 
@@ -1026,7 +1065,7 @@ end sub
 
 sub introBottom()
 	print "You carry a magic sword and {player.gold} gold pieces with you."
-	print "Your hit-point value is {player.hp}."
+	print "Your hit-point value is "+str$(playerhp)+"."
 	print "If it reaches zero, you will die . . . So be careful!"
 	delay(1)
 	print name$+" . . . You are on your way."
@@ -1041,25 +1080,24 @@ sub introBottom()
 end sub
 
 sub showCommands$()
-	local m$
+	local m$,debug
+	debug = true
 	
+	if debug = true then
+		print "Location = "+str$(playerx)+","+str$(playery)
+		print "Total Kills: "+str$(totalkills)+" This Level: "+str$(monsterskilled)+" Target: "+str$(targetKills)
+	endif
+#	print
+	print "Hit-Points: "+str$(playerhp)+" || Gold: "+str$(gold)
 	print "(N)orth, (E)ast, (S)outh, (W)est"
 	print "(U)p, (M)ap"
-	print "(Command)> ";
-	m$ = inkey$
-	switch (m$)
-		case "N":print "North":break
-		case "E":print "East":break
-		case "S":print "South":break
-		case "W":print "West":break
-		case "U":print "Up":break
-		case "M":print "Map":break
-		case "Q":print "Quit":End
-	end switch
+	input "(Command)> " m$
 	return upper$(m$)
 end sub
 
 while (gameloop = true)
+	debug = true
+	
 	if onload = true then
 		introTop()
 		monsterSetup()
@@ -1072,10 +1110,7 @@ while (gameloop = true)
 		maxlevel	= difficulty*10
 		currentlevel= maxlevel
 		
-		for i = 1 to maxlevel
-			fillArray(i)
-		next i
-		
+		fillArray(maxlevel)
 		playername$=getName$()
 		reset(difficulty)
 		teleportactive	= false
@@ -1085,6 +1120,8 @@ while (gameloop = true)
 		inroom = level(currentlevel,idx)
 		targetKills = int(rnd()*4+1)+4
 		newgame = false
+		killedby$ = " "
+		
 	endif
 	
 	cls()
@@ -1129,7 +1166,7 @@ while (gameloop = true)
 		elsif inroom = 7 then
 			ewCorridor()
 		else
-			move(playerx-1,playery)
+			move(playerx,playery+1)
 		endif
 	elsif pmove$="W" then
 		if playerx-1 = 0 then
