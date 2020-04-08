@@ -171,7 +171,7 @@ sub showMap()
 	debug = false
 	
 	cls()
-	if playerhasmap = false and debug <> true then
+	if hasmap = false then
 		print "You pat your pockets looking for your map"
 		print "before you remember you don't have one."
 		delay(1)
@@ -1079,7 +1079,7 @@ sub introMiddle()
 end sub
 
 sub introBottom()
-	print "You carry a magic sword and {player.gold} gold pieces with you."
+	print "You carry a magic sword and "+str$(gold)+" gold pieces with you."
 	print "Your hit-point value is "+str$(playerhp)+"."
 	print "If it reaches zero, you will die . . . So be careful!"
 	delay(1)

@@ -1,0 +1,72 @@
+export sub openWindow()
+	window open 100,100 to 600,700,"dodWindow","Dungeon of Dangeresque"
+	view 0,0,500,600, "dodView", "dodWindow"
+end sub
+
+export sub showText()
+	draw set "Noto Mono, Regular, 18", "dodView"
+	draw text 5,40, "Dungeon of Dangeresque", "dodView"
+end sub
+
+export sub addTV()
+	textedit 0,0 to 350,525,"dodScreen",1,"dodView"
+	textedit set "dodScreen","editable",false
+	TEXTEDIT COLOR "dodScreen", "bgcolor", 0, 0,0
+	textedit color "dodScreen", "textcolor",0,250,0
+	textedit 355,0 to 500,200,"mapView",0,"dodView"
+	textedit set "mapView","editable",false
+	textedit color "mapView","bgcolor",0,0,0
+	textedit color "mapView","textcolor",0,250,0
+end sub
+
+export sub addInput()
+	textcontrol 0,530 to 300,550,"dodInput","Command:","","dodView"
+	button 310,530 to 380,560,"myenter","Enter","dodView"
+end sub
+
+export sub addLabels()
+	text 355,205,"goldlabel","Gold:","dodView"
+	text 355,225,"hplabel","Hit-Points:","dodView"
+	text 355,245,"keylabel","Have Key:","dodView"
+end sub
+
+export sub tprint(stuff$)
+	textedit add "dodScreen",stuff$
+end sub
+
+export sub tprintc(stuff$)
+	local tlen,s,m$,i
+	
+	tlen = len(stuff$)
+	s=40-(tlen/2)
+	for i = 1 to s
+		m$=m$+" "
+	next i
+	m$=m$+stuff$
+//	print m$
+	tprint(m$)
+end sub
+
+export sub cls()
+	textedit clear "dodScreen"
+end sub
+
+export sub settingsWindow()
+	dim s$()
+	
+	dw = peek("DesktopWidth")
+	dh = peek("DesktopHeight")
+	ww = 400:wh=500
+	wx = dw - (ww/2)
+	window open 100,100,500,400,"setWindow","Settings"
+	view 0,0,ww,wh,"setview","setWindow"
+	textcontrol 5,5 to 300,225,"nameinp","Character Name:","","setview"
+	boxview 5,40 to 200,120,"diffview","Difficulty",2,"setview"
+	radiobutton 2,2,"moderate","Moderate",1,"diffview"
+	radiobutton 2,24,"difficult","Difficult",0,"diffview"
+	button 250,230 to 300,250,"abutton","OK","setview"
+	while(instr(message$, "abutton")=0)
+	wend
+	s$(0)=textcontrol get$ "nameinp"
+	x=radiobutton "moderate"
+end sub
