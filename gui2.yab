@@ -1,0 +1,107 @@
+dim winrect(4),viewrect(4)
+
+export sub addMovement()
+	boxview 0,530 to 350,600,"dirView","Movement",2,"mainView"				// Box with nav buttons
+	button 10,0 to 20,10,"moveN","N","dirView"
+	button 0,10 to 10,20,"moveW","W","dirView"
+	button 30,10 to 40,20,"moveE","E","dirView"
+	button 10,40 to 20,50,"moveS","S","dirView"
+end sub
+
+export sub addMap()															
+	boxview 315,0 to 495,200,"mapBox","Map",2,"mainView"
+	textedit 0,0 to 180,200,"mapView",0,"mapBox"
+//	textedit 315,0 to 495,200,"mapView",0,"mainView"						// Screen with map
+	textedit set "mapView","editable",false
+	textedit color "mapView","bgcolor",0,0,0
+	textedit color "mapView","textcolor",0,250,0
+	textedit set "mapView","fixed","12"
+
+end sub
+
+export sub addScreen()
+//	textedit 0,0 to 350,525,"dodScreen",1,"mainView"						// Screen with text
+	textedit 0,0 to 310,380,"dodScreen",1,"mainView"
+	textedit set "dodScreen","editable",false								// Can't edit
+	textedit color "dodScreen","bgcolor",0,0,0								// Black Background
+	textedit color "dodScreen","textcolor",0,250,0							// Green Text
+	textedit set "dodScreen","fixed","12"
+end sub
+
+export sub addCommandLine()
+	textcontrol 0,382 to 220,382+27,"command","Command:","","mainView"
+end sub
+
+export sub addStatus()
+//	view 315,210 to 460,255,"statusView","mainWindow"
+	boxview 315,210 to 460,355,"statusView","Status",2,"mainWindow"
+end sub
+
+export sub updateStatus(g,hitp,n$,lvl)
+	draw flush "statusView"
+	draw text 0,10,"Name: "+n$,"statusView"
+	draw text 10,25,"Gold: "+str$(g),"statusView"
+	draw text 10,40,"Hit-Points: "+str$(hitp),"statusView"
+	draw text 10,55,"On Level: "+str$(lvl),"statusView"
+end sub
+
+export sub openMainWindow()
+	local winheight,winwidth
+	window open 100,100 to 600,510,"mainWindow","Dungeon of Dangeresque"	// Actual window
+	window set "mainWindow","Flags","Not-Resizable"
+	winheight = 700-100:winwidth=600-100
+	view 0,0,500,410,"mainView","mainWindow"								// View on window
+	addScreen()
+	addMap()
+//	addMovement()
+	addCommandLine()
+	addStatus()
+end sub
+
+export sub shutdown()
+	window close "mainWindow"
+end sub
+
+export sub tprint(stuff$)
+	textedit add "dodScreen",stuff$+"\n"
+end sub
+
+export sub tprintn(stuff$)
+	textedit add "dodScreen",stuff$
+end sub
+
+export sub tprintc(stuff$)
+	local tlen,s,m$,i
+	
+	tlen = len(stuff$)
+	s = 40-(tlen/2)
+	for i = 1 to s
+		m$=m$+" "
+	next i
+	m$=m$+stuff$
+	tprint(m$)
+//	find way to force view 
+//	to latest added text
+end sub
+
+export sub mprint(map$)
+	textedit add "mapView",map$+"\n"
+end sub
+
+export sub mprintn(map$)
+	textedit add "mapView",map$
+end sub
+
+export sub cls()
+	textedit clear "dodScreen"
+end sub
+
+export sub clm()
+	textedit clear "mapView"
+end sub
+
+export sub clt()
+	textcontrol clear "command"
+end sub
+
+

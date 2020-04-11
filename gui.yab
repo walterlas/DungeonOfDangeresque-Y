@@ -3,6 +3,20 @@ export sub openWindow()
 	view 0,0,500,600, "dodView", "dodWindow"
 end sub
 
+export sub showWindow()
+	window open 100,100 to 600,700,"dodWindow","Dungeon of Dangeresque"
+	view 0,0,500,600,"dodView","dodWindow"
+	textedit 0,0 to 350,525,"dodScreen",1,"dodView"
+	textedit set "dodScreen","editable",false
+	textedit color "dodScreen","bgcolor",0,0,0
+	textedit color "dodScreen","textcolor",0,250,0
+	textedit 355,0 to 500,200,"mapView",0,"dodView"
+	textedit set "mapView","editable",false
+	textedit color "mapView","bgcolor",0,0,0
+	textedit color "mapView","textcolor",0,250,0
+	boxview 0,530 to 350,600,"dirView","Movement",2,"dodView"
+end sub
+
 export sub showText()
 	draw set "Noto Mono, Regular, 18", "dodView"
 	draw text 5,40, "Dungeon of Dangeresque", "dodView"
@@ -31,7 +45,7 @@ export sub addLabels()
 end sub
 
 export sub tprint(stuff$)
-	textedit add "dodScreen",stuff$
+	textedit add "dodScreen",stuff$+"\n"
 end sub
 
 export sub tprintc(stuff$)
@@ -45,14 +59,16 @@ export sub tprintc(stuff$)
 	m$=m$+stuff$
 //	print m$
 	tprint(m$)
+	linenumber$ = textedit get$ "dodScreen","countlines"
+	print linenumber$
 end sub
 
 export sub cls()
 	textedit clear "dodScreen"
 end sub
 
-export sub settingsWindow()
-	dim s$()
+export sub settingsWindow$()
+	dim s$(2)
 	
 	dw = peek("DesktopWidth")
 	dh = peek("DesktopHeight")
@@ -66,7 +82,13 @@ export sub settingsWindow()
 	radiobutton 2,24,"difficult","Difficult",0,"diffview"
 	button 250,230 to 300,250,"abutton","OK","setview"
 	while(instr(message$, "abutton")=0)
+		if message$<>"" then
+			print message$
+		endif
 	wend
 	s$(0)=textcontrol get$ "nameinp"
-	x=radiobutton "moderate"
+	s$(1)=str$(1)
+//	x=radiobutton "moderate"
+	window close "setWindow"
+	return s$()
 end sub

@@ -135,43 +135,55 @@ sub introMiddle()
 end sub
 
 sub introBottom()
-	print "You carry a magic sword and "+str$(gold)+" gold pieces with you."
-	print "Your hit-point value is "+str$(playerhp)+"."
-	print "If it reaches zero, you will die . . . So be careful!"
+	tprint("You carry a magic sword and "+str$(gold)+" gold pieces with you.")
+	tprint("Your hit-point value is "+str$(playerhp)+".")
+	tprint("If it reaches zero, you will die . . . So be careful!")
 	delay(1)
-	print name$+" . . . You are on your way to the . . ."
+	tprint(name$+" . . . You are on your way to the . . .")
 	delay(3)
 	open "dod-logo.txt" for reading as #1
 	while (not eof(1))
 		line input #1 iline$
-		print iline$
+		tprint(iline$)
 	wend
 	close #1
 #	cls()
-	print
-	print "You have arrived at . . . "
-	print "The Dungeon of Danger . . . Level "+str$(currentlevel)
-	print " "
-	print "You will encounter monsters and thieves and . . . gold."
-	print "Good luck!"
+	tprint("\n")
+	tprint("You have arrived at . . . ")
+	tprint("The Dungeon of Danger . . . Level "+str$(currentlevel))
+	tprint(" ")
+	tprint("You will encounter monsters and thieves and . . . gold.")
+	tprint("Good luck!")
 	delay(4)
 end sub
 
+sub reset(d)
+	playerx 		= int(rnd()*8+1)
+	playery 		= int(rnd()*8+1)
+	startinghp 		= 20+(int(rnd()*15)+1)/d
+	movesdepleted 	= false
+	hasmap			= false
+	haskey			= false
+	movesleft		= 100
+	gold			= 500
+	monsterkilled	= 0
+	totalkills		= 0
+	playerhp		= startinghp
+end sub
 
-openWindow()
-addTV()
-addInput()
-addLabels()
+//openWindow()
+//addTV()
+//addInput()
+//addLabels()
+dim settings$(2)
+settings$()=settingsWindow$()
+name$=settings$(0)
+d$=settings$(1)
+difficulty = val(d$)
+
+showWindow()
 
 while(instr(message$, "Quit") = 0)
-//	if onload = true then
-//		introTop()
-//		introMiddle()
-//		onload = false
-//	endif
-
-	settingsWindow()
-	
 	if onload = true then
 		introTop()
 		monsterSetup()
@@ -185,7 +197,7 @@ while(instr(message$, "Quit") = 0)
 		currentlevel= maxlevel
 		
 		fillArray(maxlevel)
-		name$=getName$()
+//		name$=getName$()
 		reset(difficulty)
 		teleportactive	= false
 		introBottom()
@@ -197,5 +209,5 @@ while(instr(message$, "Quit") = 0)
 		killedby$ = " "
 		lives = 1
 	endif
-	print message$
+//	print message$
 wend
