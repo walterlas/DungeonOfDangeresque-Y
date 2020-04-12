@@ -183,9 +183,10 @@ sub showMap()
 //		print "You pat your pockets looking for your map"
 //		print "before you remember you don't have one."
 //		delay(1)
-		mprint("You don't")
-		mprint("Have the ")
-		mprint("map yet  ")
+		clm()
+		mprint("You don't have a map yet")
+//		mprint("Have the ")
+//		mprint("map yet  ")
 	else
 		print "The Dungeon of Danger Map: Level " + str$(currentlevel)
 		print " "
@@ -240,8 +241,10 @@ sub newGame$()
 end sub
 
 sub atWall(dir$)
+	print "atWall() is trying to print"
 	tprint("You are at the " + dir$ + " wall")
 	tprint("You cannot pass through.")
+	delay(2)
 end sub
 
 sub decHP(x)
@@ -249,11 +252,13 @@ sub decHP(x)
 	if playerhp <= 0 then
 		playerdead = true
 	endif
+	updateStatus(gold,playerhp,name$,currentlevel)
 //	return(playerhp)
 end sub
 
 sub incHP(x)
 	playerhp = playerhp + x
+	updateStatus(gold,playerhp,name$,currentlevel)
 end sub
 
 sub turnEnd()
@@ -337,6 +342,7 @@ sub getMap()
 	delay(1)
 	tprint("You. . . . . find a map")
 	hasmap = true
+	showMap()
 end sub
 
 sub checkKey()
@@ -424,14 +430,14 @@ sub playerDead()
 		turnsleft = int(rnd()*15+1)*monsterskilled+10
 		tprint("You shall have " + str$(turnsleft) + " moves")
 		tprint("to find your way out")
-		tprint("of the Dungeon of Danger.")
+		tprint("of the Dungeon of Dangeresque.")
 		delay(3)
 		flourish()
 		playerdead = false
 	else
 		tprint("You lost all your gold and were")
 		tprint(". . . unable to meet the demands of")
-		tprint(". . . . . THe Dungeon of Danger")
+		tprint(". . . . . THe Dungeon of Dangeresque")
 		tprint("")
 		tprint("")
 		tprint("Better luck next time.")
@@ -608,6 +614,7 @@ sub fightOrFlee$()
 	debug = true
 	looper = true
 	
+	tprint("o####[========>")
 	tprint("Will you (F)ight or (R)un? ")
 	while (looper = true)
 		nCommands = token(message$,msg$(),"|")
@@ -761,7 +768,7 @@ sub goUpstairs()
 			tprint("You jiggle the handle, but the door is, indeed, locked.")
 			tprint("With a sigh,  you remember that you don't have an Enchanted Key,")
 			tprint("so you walk all the way down the stairs again.")
-			delay(1)
+			delay(2)
 		endif
 	endif
 end sub
@@ -1105,7 +1112,7 @@ sub introTop()
 	tprintc("   For Yab (or Yabasic)")
 	tprintc("(c) 1980 by Howard Berenbon")
 	tprintc("Adapted from Atari BASIC verson")
-	tprintc("Of 'Dunger of Danger'")
+	tprintc("Of 'Dungeon of Danger'")
 	tprintc(" ")
 	tprintc("A Fantasy Game")
 	tprintc("=-=-=-=-=-=-=-=-=-=-")
@@ -1114,17 +1121,17 @@ sub introTop()
 end sub
 
 sub introMiddle()
-//	print "The. . . "
-//	print "Dungeon of Dangeresque!"
+	tprint("The. . . ")
+	tprint("Dungeon of Dangeresque!")
 	local intro
 	
 //	intro = open("./intro.txt","r")
-	open "intro.txt" for reading as #1
-	while (not eof(1))
-		 line input #1 iline$
-		 tprint(iline$)
-	wend
-	close #1
+//	open "intro.txt" for reading as #1
+//	while (not eof(1))
+//		 line input #1 iline$
+//		 tprint(iline$)
+//	wend
+//	close #1
 end sub
 
 sub introBottom()
@@ -1132,16 +1139,17 @@ sub introBottom()
 	tprint("Your hit-point value is "+str$(playerhp)+".")
 	tprint("If it reaches zero, you will die . . . So be careful!")
 	delay(1)
-	tprint(name$+" . . . You are on your way to the . . .")
+	tprint(name$+" . . . You are on your way . . . . . .")
 	delay(3)
-	open "dod-logo.txt" for reading as #1
-	while (not eof(1))
-		line input #1 iline$
-		tprint(iline$)
-	wend
-	close #1
+//	open "dod-logo.txt" for reading as #1
+//	while (not eof(1))
+//		line input #1 iline$
+//		tprint(iline$)
+//	wend
+//	close #1
 #	cls()
 	tprint("")
+	
 	tprint("You have arrived at . . . ")
 	tprint("The Dungeon of Danger . . . Level "+str$(currentlevel))
 	tprint(" ")
@@ -1162,8 +1170,9 @@ sub showCommands$()
 	endif
 #	print
 //	tprint("Hit-Points: "+str$(playerhp)+" || Gold: "+str$(gold))
+	tprint("________________________________")
 	tprint("(N)orth, (E)ast, (S)outh, (W)est")
-	tprint("(U)p, (M)ap")
+	tprint("(U)p")
 	tprintn("Command-> ")
 	while (looper = true)
 	nCommands = token(message$, msg$(), "|")
@@ -1259,6 +1268,7 @@ while (gameloop = true)
 	if pmove$="N" then
 		tprint("North")
 		if playery-1 = 0 then
+			print "Should be a wall here"
 			atWall("North")
 		elsif inroom = 7 then
 			ewCorridor()
@@ -1304,6 +1314,8 @@ while (gameloop = true)
 		end
 	endif
 	
+	print"X: "+str$(playerx)+" Y: "+str$(playery)
+
 	inroom = level(currentlevel,getIndex(playerx,playery))
 	turnEnd()
 	updateStatus(gold,playerhp,name$,currentlevel)

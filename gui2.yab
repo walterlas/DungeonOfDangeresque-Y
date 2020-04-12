@@ -56,6 +56,7 @@ export sub openMainWindow()
 //	addMovement()
 	addCommandLine()
 	addStatus()
+	textcontrol set "command","focus","true"
 end sub
 
 export sub shutdown()
@@ -64,6 +65,11 @@ end sub
 
 export sub tprint(stuff$)
 	textedit add "dodScreen",stuff$+"\n"
+	numlines = textedit get "dodScreen","countphysicallines"
+//	print numlines
+	if numlines > 25 then
+		textedit set "dodScreen","gotoline",numlines
+	endif
 end sub
 
 export sub tprintn(stuff$)
@@ -74,7 +80,7 @@ export sub tprintc(stuff$)
 	local tlen,s,m$,i
 	
 	tlen = len(stuff$)
-	s = 40-(tlen/2)
+	s = 20-(tlen/2)
 	for i = 1 to s
 		m$=m$+" "
 	next i
